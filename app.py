@@ -1,77 +1,79 @@
 import streamlit as st
+from sections.onboarding import onboarding_page
+from sections.iniciais_aereo import iniciais_aereo_page
+from sections.clientes import clientes_page
+from sections.extravio_bagagem import extravio_bagagem_page
+from sections.downgrade import downgrade_page
+from sections.overbooking import overbooking_page
+from sections.menu import menu_page
 import os
-from datetime import datetime
-from utils.form_handler import criar_formulario
-from utils.file_handler import criar_pasta_cliente, salvar_arquivos
-from utils.pdf_generator import converter_para_pdf, combinar_comprovantes_gastos, combinar_todos_documentos
-from utils.document_handler import gerar_procuracao
-import shutil
 
 def main():
-    st.title("Sistema de Cadastro de Clientes")
+    # Configuração da página
+    st.set_page_config(
+        page_title="Sistema Jurídico",
+        page_icon="⚖️",
+        layout="wide"
+    )
     
-    # Criar formulário e capturar dados
-    dados_cliente, submitted = criar_formulario()
+    # Inicializar a página padrão se não houver nenhuma selecionada
+    if 'pagina' not in st.session_state:
+        st.session_state.pagina = "Menu"  # Alterado para começar no Menu
     
-    if submitted:
-        if dados_cliente['nome']:
-            progress_bar = st.progress(0)
-            status_text = st.empty()
-            
+    # Menu lateral - Seção Principal
+    st.sidebar.title("Menu Principal")
+    if st.sidebar.button("Menu", use_container_width=True):
+        st.session_state.pagina = "Menu"
+    if st.sidebar.button("Onboarding", use_container_width=True):
+        st.session_state.pagina = "Onboarding"
+    if st.sidebar.button("Consultar Clientes", use_container_width=True):
+        st.session_state.pagina = "Clientes"
+    
+    # Separador visual
+    st.sidebar.markdown("---")
+    
+    # Menu lateral - Seção Aéreo
+    st.sidebar.title("Aéreo")
+    if st.sidebar.button("Atraso / Cancelamento de Voo", use_container_width=True):
+        st.session_state.pagina = "Gerar Iniciais Aéreo"
+    if st.sidebar.button("Extravio de Bagagem", use_container_width=True):
+        st.session_state.pagina = "Extravio Bagagem"
+    if st.sidebar.button("Downgrade", use_container_width=True):
+        st.session_state.pagina = "Downgrade"
+    if st.sidebar.button("Overbooking", use_container_width=True):
+        st.session_state.pagina = "Overbooking"
+    
+    # Debug: Mostrar página atual
+    st.sidebar.markdown("---")
+    st.sidebar.write(f"Página atual: {st.session_state.pagina}")
+    
+    # Verificar estrutura de arquivos
+    st.sidebar.write("Debug - Arquivos:")
+    st.sidebar.write(f"sections existe: {os.path.exists('sections')}")
+    st.sidebar.write(f"clientes.py existe: {os.path.exists('sections/clientes.py')}")
+    
+    # Renderizar página selecionada
+    try:
+        if st.session_state.pagina == "Menu":
+            menu_page()
+        elif st.session_state.pagina == "Onboarding":
+            onboarding_page()
+        elif st.session_state.pagina == "Gerar Iniciais Aéreo":
+            iniciais_aereo_page()
+        elif st.session_state.pagina == "Clientes":
             try:
-                # Criar pasta do cliente (local e Drive)
-                status_text.text("Criando pasta do cliente...")
-                pasta_info = criar_pasta_cliente(dados_cliente['nome'])
-                progress_bar.progress(10)
-                
-                # Processar documentos individuais
-                status_text.text("Processando documentos individuais...")
-                arquivos_pdf = salvar_arquivos(
-                    pasta_info,
-                    dados_cliente['comprovante_residencia'],
-                    dados_cliente['documento_identidade']
-                )
-                pdfs_gerados = converter_para_pdf(
-                    pasta_info,
-                    arquivos_pdf,
-                    dados_cliente['nome']
-                )
-                progress_bar.progress(40)
-                
-                # Processar comprovantes de gastos
-                status_text.text("Processando comprovantes de gastos...")
-                if dados_cliente['comprovante_gastos']:
-                    comprovantes_gastos_pdf = combinar_comprovantes_gastos(
-                        pasta_info,
-                        dados_cliente['comprovante_gastos'],
-                        dados_cliente['nome']
-                    )
-                progress_bar.progress(70)
-                
-                # Combinar todos os documentos
-                status_text.text("Combinando todos os documentos...")
-                combinar_todos_documentos(pasta_info, dados_cliente['nome'])
-                progress_bar.progress(85)
-                
-                # Gerar e salvar procuração
-                status_text.text("Gerando procuração...")
-                gerar_procuracao(pasta_info, dados_cliente)
-                progress_bar.progress(100)
-                
-                # Limpar arquivos temporários ao final
-                if os.path.exists(pasta_info['local']):
-                    shutil.rmtree(pasta_info['local'])
-                
-                status_text.empty()
-                st.success("Cadastro realizado com sucesso! Documentos salvos no Google Drive.")
-                
+                st.write("Tentando carregar página de clientes...")
+                clientes_page()
             except Exception as e:
-                progress_bar.empty()
-                status_text.empty()
-                st.error(f"Erro ao processar o cadastro: {str(e)}")
-                
-        else:
-            st.error("Por favor, preencha pelo menos o nome do cliente.")
+                st.error(f"Erro específico na página de clientes: {str(e)}")
+        elif st.session_state.pagina == "Extravio Bagagem":
+            extravio_bagagem_page()
+        elif st.session_state.pagina == "Downgrade":
+            downgrade_page()
+        elif st.session_state.pagina == "Overbooking":
+            overbooking_page()
+    except Exception as e:
+        st.error(f"Erro ao carregar página: {str(e)}")
 
 if __name__ == "__main__":
     main() 
