@@ -46,6 +46,9 @@ def criar_formulario():
             ["Solteiro(a)", "Casado(a)", "Divorciado(a)", "Viúvo(a)", "União Estável"]
         )
         profissao = st.text_input("Profissão")
+        email = st.text_input("E-mail")
+        celular = st.text_input("Celular")
+        data_nascimento = st.text_input("Data de Nascimento")
         
         # Documentos
         col1, col2 = st.columns(2)
@@ -114,6 +117,9 @@ def criar_formulario():
                 'nacionalidade': nacionalidade,
                 'estado_civil': estado_civil,
                 'profissao': profissao,
+                'email': email,
+                'celular': celular,
+                'data_nascimento': data_nascimento,
                 'rg': rg,
                 'cpf': cpf,
                 'caso': caso,

@@ -4,6 +4,7 @@ from utils.file_handler import criar_pasta_cliente, salvar_arquivos
 from utils.pdf_generator import converter_para_pdf, combinar_comprovantes_gastos, combinar_todos_documentos
 from utils.document_handler import gerar_procuracao
 from utils.database import salvar_cliente
+from utils.sheets_handler import salvar_cliente_sheets
 import os
 import shutil
 
@@ -20,14 +21,19 @@ def onboarding_page():
             
             try:
                 # Salvar dados no Supabase
-                status_text.text("Salvando dados do cliente...")
+                status_text.text("Salvando dados no banco...")
                 cliente_id = salvar_cliente(dados_cliente)
                 progress_bar.progress(5)
+                
+                # Salvar dados no Google Sheets
+                status_text.text("Salvando dados na planilha...")
+                salvar_cliente_sheets(dados_cliente)
+                progress_bar.progress(10)
                 
                 # Criar pasta do cliente (local e Drive)
                 status_text.text("Criando pasta do cliente...")
                 pasta_info = criar_pasta_cliente(dados_cliente['nome'])
-                progress_bar.progress(10)
+                progress_bar.progress(20)
                 
                 # Processar documentos individuais
                 status_text.text("Processando documentos individuais...")
