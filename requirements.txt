@@ -7,4 +7,7 @@ PyPDF2
 python-dateutil
 pywin32
 pythoncom
-locale 
+locale
+google-api-python-client
+google-auth-httplib2
+google-auth-oauthlib 

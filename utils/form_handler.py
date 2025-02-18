@@ -2,13 +2,21 @@ import streamlit as st
 from datetime import datetime
 import locale
 
-def capitalizar_nome(nome):
+def capitalizar_nome(texto):
     """
-    Capitaliza a primeira letra de cada palavra no nome
+    Capitaliza a primeira letra de cada palavra no texto
     """
-    if not nome:
-        return nome
-    return ' '.join(word.capitalize() for word in nome.split())
+    if not texto:
+        return texto
+    return ' '.join(word.capitalize() for word in texto.split())
+
+def capitalizar_primeira_letra(texto):
+    """
+    Capitaliza apenas a primeira letra do texto
+    """
+    if not texto:
+        return texto
+    return texto[0].upper() + texto[1:].lower() if len(texto) > 1 else texto.upper()
 
 def criar_formulario():
     """
@@ -20,25 +28,24 @@ def criar_formulario():
     with st.form("formulario_cliente"):
         # Dados pessoais
         nome_input = st.text_input("Nome completo")
-        dados_cliente['nome'] = capitalizar_nome(nome_input)
-        dados_cliente['nacionalidade'] = st.text_input("Nacionalidade")
-        dados_cliente['estado_civil'] = st.selectbox(
+        nacionalidade_input = st.text_input("Nacionalidade")
+        estado_civil = st.selectbox(
             "Estado Civil",
             ["Solteiro(a)", "Casado(a)", "Divorciado(a)", "Viúvo(a)"]
         )
-        dados_cliente['profissao'] = st.text_input("Profissão")
+        profissao_input = st.text_input("Profissão")
         
         # Documentos
-        dados_cliente['rg'] = st.text_input("RG")
-        dados_cliente['cpf'] = st.text_input("CPF")
+        rg = st.text_input("RG")
+        cpf = st.text_input("CPF")
         
         # Endereço
-        dados_cliente['rua'] = st.text_input("Rua")
-        dados_cliente['bairro'] = st.text_input("Bairro")
-        dados_cliente['complemento'] = st.text_input("Complemento")
-        dados_cliente['cep'] = st.text_input("CEP")
-        dados_cliente['cidade'] = st.text_input("Cidade")
-        dados_cliente['estado'] = st.text_input("Estado")
+        rua_input = st.text_input("Rua")
+        bairro_input = st.text_input("Bairro")
+        complemento_input = st.text_input("Complemento")
+        cep = st.text_input("CEP")
+        cidade_input = st.text_input("Cidade")
+        estado_input = st.text_input("Estado")
         
         # Upload de arquivos
         dados_cliente['comprovante_residencia'] = st.file_uploader(
@@ -69,5 +76,20 @@ def criar_formulario():
         dados_cliente['data'] = data_atual.strftime("%d de %B de %Y")
         
         submitted = st.form_submit_button("Enviar Formulário")
+        
+        if submitted:
+            # Capitalizar os dados após o envio do formulário
+            dados_cliente['nome'] = capitalizar_nome(nome_input)
+            dados_cliente['nacionalidade'] = capitalizar_primeira_letra(nacionalidade_input)
+            dados_cliente['estado_civil'] = estado_civil  # Já está capitalizado
+            dados_cliente['profissao'] = capitalizar_primeira_letra(profissao_input)
+            dados_cliente['rg'] = rg  # Manter original para documentos
+            dados_cliente['cpf'] = cpf  # Manter original para documentos
+            dados_cliente['rua'] = capitalizar_nome(rua_input)
+            dados_cliente['bairro'] = capitalizar_nome(bairro_input)
+            dados_cliente['complemento'] = capitalizar_primeira_letra(complemento_input)
+            dados_cliente['cep'] = cep  # Manter original para CEP
+            dados_cliente['cidade'] = capitalizar_nome(cidade_input)
+            dados_cliente['estado'] = capitalizar_nome(estado_input)
     
     return dados_cliente, submitted 

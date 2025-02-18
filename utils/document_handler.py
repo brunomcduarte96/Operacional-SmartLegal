@@ -4,8 +4,9 @@ from datetime import datetime
 import locale
 import pythoncom
 import win32com.client
+from utils.drive_handler import upload_arquivo
 
-def gerar_procuracao(pasta_cliente, dados_cliente):
+def gerar_procuracao(pasta_info, dados_cliente):
     """
     Gera a procuração preenchida com os dados do cliente
     """
@@ -25,7 +26,6 @@ def gerar_procuracao(pasta_cliente, dados_cliente):
         # Obter caminhos absolutos
         base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
         template_path = os.path.abspath(os.path.join(base_dir, "templates", "Modelo Procuracao JEC.docx"))
-        pasta_cliente_abs = os.path.abspath(pasta_cliente)
         
         if not os.path.exists(template_path):
             raise FileNotFoundError(f"Arquivo modelo não encontrado em: {template_path}")
@@ -57,8 +57,18 @@ def gerar_procuracao(pasta_cliente, dados_cliente):
                     paragrafo.text = paragrafo.text.replace(placeholder, str(valor))
         
         # Salvar documento Word temporário com caminho absoluto
-        docx_path = os.path.abspath(os.path.join(pasta_cliente_abs, f"Procuracao JEC - {dados_cliente['nome']}.docx"))
+        docx_path = os.path.abspath(os.path.join(pasta_info['local'], f"Procuracao JEC - {dados_cliente['nome']}.docx"))
         doc.save(docx_path)
+        
+        # Upload do arquivo DOCX para o Drive
+        with open(docx_path, 'rb') as f:
+            conteudo_docx = f.read()
+        docx_id = upload_arquivo(
+            pasta_info['drive_id'],
+            f"Procuracao JEC - {dados_cliente['nome']}.docx",
+            conteudo_docx,
+            'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+        )
         
         # Converter para PDF usando Word COM
         word = win32com.client.Dispatch('Word.Application')
@@ -66,22 +76,39 @@ def gerar_procuracao(pasta_cliente, dados_cliente):
         
         try:
             doc = word.Documents.Open(docx_path)
-            pdf_path = os.path.abspath(os.path.join(pasta_cliente_abs, f"Procuracao JEC - {dados_cliente['nome']}.pdf"))
+            pdf_path = os.path.abspath(os.path.join(pasta_info['local'], f"Procuracao JEC - {dados_cliente['nome']}.pdf"))
             doc.SaveAs(pdf_path, FileFormat=17)  # 17 = PDF
             doc.Close()
+            
+            # Upload do PDF para o Drive
+            with open(pdf_path, 'rb') as f:
+                conteudo_pdf = f.read()
+            pdf_id = upload_arquivo(
+                pasta_info['drive_id'],
+                f"Procuracao JEC - {dados_cliente['nome']}.pdf",
+                conteudo_pdf,
+                'application/pdf'
+            )
+            
         except Exception as e:
             raise Exception(f"Erro ao converter para PDF: {str(e)}\nCaminho do arquivo: {docx_path}")
         finally:
             word.Quit()
         
-        # Remover arquivo Word temporário
+        # Remover arquivos temporários
         try:
             if os.path.exists(docx_path):
                 os.remove(docx_path)
+            if os.path.exists(pdf_path):
+                os.remove(pdf_path)
         except Exception as e:
-            print(f"Aviso: Não foi possível remover o arquivo temporário: {str(e)}")
+            print(f"Aviso: Não foi possível remover os arquivos temporários: {str(e)}")
         
-        return pdf_path
+        return {
+            'local': pdf_path,
+            'drive_id': pdf_id,
+            'docx_drive_id': docx_id
+        }
         
     except Exception as e:
         raise Exception(f"Erro ao gerar procuração: {str(e)}")

@@ -2,10 +2,19 @@ from PIL import Image
 import img2pdf
 from PyPDF2 import PdfMerger
 import os
+from utils.drive_handler import upload_arquivo
 
-def converter_para_pdf(pasta_cliente, arquivos, nome_cliente):
+def upload_pdf_drive(pasta_id, arquivo_local, nome_arquivo):
     """
-    Converte arquivos individuais para PDF
+    Faz upload de um PDF para o Google Drive
+    """
+    with open(arquivo_local, 'rb') as f:
+        conteudo = f.read()
+    return upload_arquivo(pasta_id, nome_arquivo, conteudo, 'application/pdf')
+
+def converter_para_pdf(pasta_info, arquivos, nome_cliente):
+    """
+    Converte arquivos individuais para PDF e faz upload para o Drive
     """
     pdfs_gerados = []
     
@@ -22,10 +31,10 @@ def converter_para_pdf(pasta_cliente, arquivos, nome_cliente):
         elif arquivo_tipo == 'documento_identidade':
             nome_arquivo = f"Documento de Identidade - {nome_cliente}.pdf"
         else:
-            continue  # Ignora outros tipos de arquivo
+            continue
             
-        output_pdf = os.path.join(pasta_cliente, nome_arquivo)
-        temp_path = os.path.join(pasta_cliente, f"temp_{arquivo.name}")
+        output_pdf = os.path.join(pasta_info['local'], nome_arquivo)
+        temp_path = os.path.join(pasta_info['local'], f"temp_{arquivo.name}")
         
         try:
             # Salvar arquivo temporariamente
@@ -41,7 +50,9 @@ def converter_para_pdf(pasta_cliente, arquivos, nome_cliente):
                 with open(output_pdf, 'wb') as f:
                     f.write(arquivo.getbuffer())
             
-            pdfs_gerados.append(output_pdf)
+            # Upload para o Drive
+            file_id = upload_pdf_drive(pasta_info['drive_id'], output_pdf, nome_arquivo)
+            pdfs_gerados.append({'local': output_pdf, 'drive_id': file_id})
             
         finally:
             # Limpar arquivo temporário
@@ -50,18 +61,18 @@ def converter_para_pdf(pasta_cliente, arquivos, nome_cliente):
     
     return pdfs_gerados
 
-def combinar_comprovantes_gastos(pasta_cliente, arquivos_gastos, nome_cliente):
+def combinar_comprovantes_gastos(pasta_info, arquivos_gastos, nome_cliente):
     """
     Combina múltiplos comprovantes de gastos em um único PDF
     """
     if not arquivos_gastos:
         return None
         
-    output_path = os.path.join(pasta_cliente, f"Comprovante de Gastos - {nome_cliente}.pdf")
+    output_path = os.path.join(pasta_info['local'], f"Comprovante de Gastos - {nome_cliente}.pdf")
     merger = PdfMerger()
     
     for arquivo in arquivos_gastos:
-        temp_path = os.path.join(pasta_cliente, f"temp_{arquivo.name}")
+        temp_path = os.path.join(pasta_info['local'], f"temp_{arquivo.name}")
         pdf_path = os.path.splitext(temp_path)[0] + '.pdf'
         
         try:
@@ -90,17 +101,12 @@ def combinar_comprovantes_gastos(pasta_cliente, arquivos_gastos, nome_cliente):
     merger.write(output_path)
     merger.close()
     
-    # Limpar quaisquer arquivos temporários remanescentes
-    for arquivo in os.listdir(pasta_cliente):
-        if arquivo.startswith('temp_'):
-            try:
-                os.remove(os.path.join(pasta_cliente, arquivo))
-            except Exception as e:
-                print(f"Erro ao remover arquivo temporário: {str(e)}")
+    # Upload para o Drive
+    file_id = upload_pdf_drive(pasta_info['drive_id'], output_path, f"Comprovante de Gastos - {nome_cliente}.pdf")
     
-    return output_path
+    return {'local': output_path, 'drive_id': file_id}
 
-def combinar_todos_documentos(pasta_cliente, nome_cliente):
+def combinar_todos_documentos(pasta_info, nome_cliente):
     """
     Combina todos os documentos em um único PDF
     """
@@ -111,24 +117,19 @@ def combinar_todos_documentos(pasta_cliente, nome_cliente):
         f"Comprovante de Gastos - {nome_cliente}.pdf"
     ]
     
-    output_path = os.path.join(pasta_cliente, f"Documentos Combinados - {nome_cliente}.pdf")
+    output_path = os.path.join(pasta_info['local'], f"Documentos Combinados - {nome_cliente}.pdf")
     merger = PdfMerger()
     
     # Adiciona cada documento na ordem especificada
     for arquivo in arquivos:
-        arquivo_path = os.path.join(pasta_cliente, arquivo)
+        arquivo_path = os.path.join(pasta_info['local'], arquivo)
         if os.path.exists(arquivo_path):
             merger.append(arquivo_path)
     
     merger.write(output_path)
     merger.close()
     
-    # Limpar quaisquer arquivos temporários remanescentes
-    for arquivo in os.listdir(pasta_cliente):
-        if arquivo.startswith('temp_'):
-            try:
-                os.remove(os.path.join(pasta_cliente, arquivo))
-            except Exception as e:
-                print(f"Erro ao remover arquivo temporário: {str(e)}")
+    # Upload para o Drive
+    file_id = upload_pdf_drive(pasta_info['drive_id'], output_path, f"Documentos Combinados - {nome_cliente}.pdf")
     
-    return output_path 
+    return {'local': output_path, 'drive_id': file_id} 
