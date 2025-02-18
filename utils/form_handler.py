@@ -107,7 +107,7 @@ def criar_formulario():
         st.write("### Documentos")
         comprovante_residencia = st.file_uploader("Comprovante de Residência", type=['pdf', 'png', 'jpg', 'jpeg'])
         documento_identidade = st.file_uploader("Documento de Identidade", type=['pdf', 'png', 'jpg', 'jpeg'])
-        comprovante_gastos = st.file_uploader("Comprovantes de Gastos (opcional)", type=['pdf', 'png', 'jpg', 'jpeg'], accept_multiple_files=True)
+        comprovante_gastos = st.file_uploader("Outros Comprovantes (opcional)", type=['pdf', 'png', 'jpg', 'jpeg'], accept_multiple_files=True)
         
         submitted = st.form_submit_button("Cadastrar")
         
