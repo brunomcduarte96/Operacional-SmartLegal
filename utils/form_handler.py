@@ -139,7 +139,7 @@ def criar_formulario():
 
     # Data atual por extenso em português
     data_atual = datetime.now()
-    st.write(f"Data atual: {data_atual.strftime('%d de %B de %Y')}")
+    
     
     with st.form("cadastro_cliente"):
         st.write("### Dados do Cliente")
