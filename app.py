@@ -11,7 +11,7 @@ import os
 def main():
     # Configuração da página
     st.set_page_config(
-        page_title="Sistema Jurídico",
+        page_title="Smart Legal",
         page_icon="⚖️",
         layout="wide"
     )
@@ -37,7 +37,7 @@ def main():
         st.session_state.pagina = "Menu"  # Alterado para começar no Menu
     
     # Menu lateral - Seção Principal
-    st.sidebar.title("Menu Principal")
+    st.sidebar.title("Smart Legal")
     if st.sidebar.button("Menu", use_container_width=True):
         st.session_state.pagina = "Menu"
     if st.sidebar.button("Onboarding", use_container_width=True):
