@@ -5,6 +5,7 @@ from sections.extravio_bagagem import extravio_bagagem_page
 from sections.downgrade import downgrade_page
 from sections.overbooking import overbooking_page
 from sections.menu import menu_page
+from utils.auth import init_auth, login_page, logout
 import os
 
 def main():
@@ -14,6 +15,22 @@ def main():
         page_icon="⚖️",
         layout="wide"
     )
+    
+    # Inicializar autenticação
+    init_auth()
+    
+    # Verificar se usuário está autenticado
+    if not st.session_state.authenticated:
+        login_page()
+        return
+        
+    # Botão de logout no sidebar
+    if st.sidebar.button("Logout"):
+        logout()
+        return
+    
+    # Mostrar usuário logado
+    st.sidebar.write(f"Usuário: {st.session_state.user.email}")
     
     # Inicializar a página padrão se não houver nenhuma selecionada
     if 'pagina' not in st.session_state:
