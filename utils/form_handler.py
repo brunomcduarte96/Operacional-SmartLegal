@@ -154,7 +154,7 @@ def criar_formulario():
         profissao = st.text_input("Profissão")
         email = st.text_input("E-mail")
         celular = st.text_input("Celular")
-        data_nascimento = st.date_input("Data de Nascimento")
+        data_nascimento = st.text_input("Data de Nascimento")
         
         # Documentos
         col1, col2 = st.columns(2)
