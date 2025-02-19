@@ -10,6 +10,7 @@ def get_supabase_client():
     """
     Cria e retorna um cliente do Supabase
     """
+    
     try:
         supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
         return supabase
@@ -51,26 +52,4 @@ def salvar_cliente(dados_cliente):
         return response.data[0]['id']  # Retorna o ID do cliente inserido
         
     except Exception as e:
-        raise Exception(f"Erro ao salvar cliente no banco de dados: {str(e)}")
-
-def listar_clientes():
-    """
-    Lista todos os clientes ordenados por nome
-    """
-    try:
-        supabase = get_supabase_client()
-        response = supabase.table('Clientes_Ativos_SmartLegal').select('*').order('nome').execute()
-        return response.data
-    except Exception as e:
-        raise Exception(f"Erro ao listar clientes: {str(e)}")
-
-def buscar_cliente_por_cpf(cpf):
-    """
-    Busca um cliente específico pelo CPF
-    """
-    try:
-        supabase = get_supabase_client()
-        response = supabase.table('Clientes_Ativos_SmartLegal').select('*').eq('cpf', cpf).execute()
-        return response.data[0] if response.data else None
-    except Exception as e:
-        raise Exception(f"Erro ao buscar cliente: {str(e)}") 
+        raise Exception(f"Erro ao salvar cliente no banco de dados: {str(e)}") 

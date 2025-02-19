@@ -1,7 +1,6 @@
 import streamlit as st
 from sections.onboarding import onboarding_page
 from sections.iniciais_aereo import iniciais_aereo_page
-from sections.clientes import clientes_page
 from sections.extravio_bagagem import extravio_bagagem_page
 from sections.downgrade import downgrade_page
 from sections.overbooking import overbooking_page
@@ -26,8 +25,6 @@ def main():
         st.session_state.pagina = "Menu"
     if st.sidebar.button("Onboarding", use_container_width=True):
         st.session_state.pagina = "Onboarding"
-    if st.sidebar.button("Consultar Clientes", use_container_width=True):
-        st.session_state.pagina = "Clientes"
     
     # Separador visual
     st.sidebar.markdown("---")
@@ -60,12 +57,6 @@ def main():
             onboarding_page()
         elif st.session_state.pagina == "Gerar Iniciais Aéreo":
             iniciais_aereo_page()
-        elif st.session_state.pagina == "Clientes":
-            try:
-                st.write("Tentando carregar página de clientes...")
-                clientes_page()
-            except Exception as e:
-                st.error(f"Erro específico na página de clientes: {str(e)}")
         elif st.session_state.pagina == "Extravio Bagagem":
             extravio_bagagem_page()
         elif st.session_state.pagina == "Downgrade":
